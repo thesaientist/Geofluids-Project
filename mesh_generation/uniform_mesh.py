@@ -4,29 +4,23 @@
 import numpy as np
 import scipy as sp
 import cartesian_dist as cd
-import plotly.plotly as py
-import plotly.graph_objs as go
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-# Create cylindrical mesh (axis of cylinder is in x3 or z direction) - UNITS --> cm
-height = 4*100                         # Height of cylinder
-radius = 15*100                         # Radius of cylinder
-rw = 0.9*100                            # Radius of wellbore
-dx = 0.450001*100                        # Discretization size
+# Create rectangular prism mesh - UNITS --> cm
+height = 2*100                         # Height of prism
+length = 15*100                         # length of prism
+width = 15*100                          # width of prism
+dx = 0.500001*100                        # Discretization size
 dV = dx**3                              # Volume associated with each node
 blk_num = 1                             # Block number (material properties)
 horizon = 3*dx                          # Horizon size (3 * mesh size)
 
-# Target fracture zone (nodesets)
-zwf = 6*dx                           # Portion of wellbore length where HEGF is applied
-n_lay = 3                            # Number of node layers around wellbore to apply HEGF
-
-"""Approximate Rectangular Prism"""
+"""Rectangular Prism"""
 # Lengths on each of the 3 dimensions
 L3 = height
-L1 = 2*radius
-L2 = L1
+L1 = length
+L2 = width
 
 # Number of discretized units in each of 3 dimensions
 x3_n = np.int_(np.floor(float(L3)/dx))
@@ -38,12 +32,8 @@ x2_n = np.int_(np.floor(float(L2)/dx))
 """Determining and storing each node coordinate locations, block # and node
 volume that belongs in the domain of interest and disregard other nodes"""
 # Allocate list for storing node information
-nodes = []                          # All nodes in cylindrical reservoir domain
-nodeset1 = []                       # All nodes for which HEGF pressure pulse in wellbore is applied
-nodeset2 = []                       # All nodes near outer boundary where in-situ compression is directly applied (at least as thich as horizon size)
-nodeset3 = []                       # All nodes z>=0 (for the Peridigm full domain constraint issue in z direction)
-nodeset4 = []                       # All nodes z<0 (for the Peridigm full domain constraint issue in z direction)
-nodeset_full = []                   # Giving full domain as a nodeset (for Peridigm full domain constraint issue in z direction)
+nodes = []                          # All nodes in rectangular reservoir domain
+nodeset_full = []                      # All nodes in a nodeset to allow entire domain Dirichlet BC application
 node_count = 0                     # for tracking node number (use in nodesets)
 # For specifying nodesets, count starts at 1 for the first node in the input
 # mesh file
@@ -56,31 +46,14 @@ for k in range(x3_n):
 
         for i in range(x1_n):
             x1_coord = (-L1/2.0 + dx/2.0) + i*dx
-            loc = [0,0,x3_coord,x1_coord,x2_coord,x3_coord]
-            d = cd.dist(loc)
+            #loc = [0,0,x3_coord,x1_coord,x2_coord,x3_coord]
+            #d = cd.dist(loc)
 
-            # Criteria to check for existence of node in desired domain shape
-            if d > rw and d <= radius:
-                node_count += 1
-                node_info = [node_count,x1_coord,x2_coord,x3_coord,blk_num,dV]
-                nodes.append(node_info)
-                nodeset_full.append(node_count)
-
-                # z>=0 portion of full set of nodes in the domain (for Peridigm full domain constraint issue)
-                if x3_coord>=0:
-                    nodeset3.append(node_count)
-
-                # z<0 portion of full set of nodes in the domain (for Peridigm full domain constraint issue)
-                if x3_coord<0:
-                    nodeset4.append(node_count)
-
-                # Criteria for in-domain node to be in nodeset 1 (for HEGF boundary condition (BC) application)
-                if d <= (rw + n_lay * dx) and abs(x3_coord) < zwf/2.0:
-                    nodeset1.append(node_count)
-
-                # Criterial for in-domain node to be in nodeset 2 (for direct in-situ stress application via displacement BC)
-                if d >= (radius-horizon) and d <= radius:
-                    nodeset2.append(node_count)
+            # All such nodes are in the rectuangular prism domain (all have same bl)
+            node_count += 1
+            node_info = [node_count,x1_coord,x2_coord,x3_coord,blk_num,dV]
+            nodes.append(node_info)
+            nodeset_full.append(node_count)
 
 
 """ WRITE NODES TO TXT FILE """
@@ -97,22 +70,6 @@ for lst_num in range(len(nodes)):
 np.savetxt('uniform_cylinder.txt',node_array,fmt=['%4.2f','%4.2f','%4.2f','%i','%4.2f'],delimiter='  ')
 
 """ WRITE NODESETS """
-with open('nodeset1.txt','w') as f:
-    for node_num in nodeset1:
-        f.write(str(node_num) + '\n')
-
-with open('nodeset2.txt','w') as f:
-    for node_num in nodeset2:
-        f.write(str(node_num) + '\n')
-
-with open('nodeset3.txt','w') as f:
-    for node_num in nodeset3:
-        f.write(str(node_num) + '\n')
-
-with open('nodeset4.txt','w') as f:
-    for node_num in nodeset4:
-        f.write(str(node_num) + '\n')
-
 with open('nodeset_full.txt','w') as f:
     for node_num in nodeset_full:
         f.write(str(node_num) + '\n')

@@ -1,0 +1,2 @@
+# mesh generator output files (including full text file meshes and nodeset text files)
+mesh_generation/*.txt
