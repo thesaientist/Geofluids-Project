@@ -1,0 +1,23 @@
+* Simulation parameters for geofluids project simulations
+
+----------------------
+MATERIAL PROPERTIES:
+----------------------
+Density - 2700 kg/m3 (cgs: 2.7 g/cm3)
+Bulk Modulus - 37.0 GPa (cgs: 3.7e11 dyn/cm2)
+Shear Modulus - 10.0 GPa (cgs: 1.0e11 dyn/cm2)
+Poisson's Ratio - 0.25
+Energy Release Rate (G0) - 298 J/m2
+
+
+***EXXON DOMAIN SIZE: Rock length - 15 m, width - 15 m, height - 2 m (**could vary**), discretization size - varied
+
+------------------------
+CASES:
+------------------------
+
+***Case 1***
+Tension as prescribed displacement:
+Discretization size: varied --> affects Horizon (3*discretization size) and Critical stretch value calculated
+Height of rectangular reservoir is 2 m
+No confining stresses

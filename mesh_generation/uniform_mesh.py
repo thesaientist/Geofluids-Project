@@ -11,7 +11,7 @@ from mpl_toolkits.mplot3d import Axes3D
 height = 2*100                         # Height of prism
 length = 15*100                         # length of prism
 width = 15*100                          # width of prism
-dx = 0.500001*100                        # Discretization size
+dx = 0.150001*100                        # Discretization size
 dV = dx**3                              # Volume associated with each node
 blk_num = 1                             # Block number (material properties)
 horizon = 3*dx                          # Horizon size (3 * mesh size)
@@ -34,6 +34,8 @@ volume that belongs in the domain of interest and disregard other nodes"""
 # Allocate list for storing node information
 nodes = []                          # All nodes in rectangular reservoir domain
 nodeset_full = []                      # All nodes in a nodeset to allow entire domain Dirichlet BC application
+nodeset1 = []                       # All nodes on the top (in x) within 2 horizons from boundary
+nodeset2 = []                       # All nodes on the bottom (in x) within 2 horizons from boundary
 node_count = 0                     # for tracking node number (use in nodesets)
 # For specifying nodesets, count starts at 1 for the first node in the input
 # mesh file
@@ -46,14 +48,22 @@ for k in range(x3_n):
 
         for i in range(x1_n):
             x1_coord = (-L1/2.0 + dx/2.0) + i*dx
-            #loc = [0,0,x3_coord,x1_coord,x2_coord,x3_coord]
+            #loc = [0,x2_coord,x3_coord,x1_coord,x2_coord,x3_coord]
             #d = cd.dist(loc)
 
-            # All such nodes are in the rectuangular prism domain (all have same bl)
+            # All such nodes are in the rectuangular prism domain (all have same blk num)
             node_count += 1
             node_info = [node_count,x1_coord,x2_coord,x3_coord,blk_num,dV]
             nodes.append(node_info)
             nodeset_full.append(node_count)
+
+            # Criteria for nodeset1: all nodes within 2 horizons from top x boundary
+            if x1_coord>=0 and (L1/2-x1_coord) <= horizon:
+                nodeset1.append(node_count)
+
+            # Criteria for nodeset2: all nodes within 2 horizons from bottom x boundary
+            if x1_coord<0 and abs(x1_coord) <= 1.5*horizon and abs(-L2/2-x2_coord)<=450:
+                nodeset2.append(node_count)
 
 
 """ WRITE NODES TO TXT FILE """
@@ -73,6 +83,15 @@ np.savetxt('uniform_cylinder.txt',node_array,fmt=['%4.2f','%4.2f','%4.2f','%i','
 with open('nodeset_full.txt','w') as f:
     for node_num in nodeset_full:
         f.write(str(node_num) + '\n')
+
+with open('nodeset1.txt','w') as f:
+    for node_num in nodeset1:
+        f.write(str(node_num) + '\n')
+
+with open('nodeset2.txt','w') as f:
+    for node_num in nodeset2:
+        f.write(str(node_num) + '\n')
+
 
 """ NODESET PART ***TESTING***
 xyz_ns = np.zeros((len(nodeset1),3))

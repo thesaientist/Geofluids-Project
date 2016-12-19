@@ -1,0 +1,16 @@
+Known Material Properties:
+Energy Release Rate (G0) - 298 J/m2,
+Bulk Modulus (Kb) - 37.0 GPa (cgs: 3.7e11 dyn/cm2),
+
+* Case 1
+
+-------------------
+*******Run 1*******
+-------------------
+Discretization size: 15.0001 cm
+Horizon = 3*discretization = 45.0003 cm
+Critical stretch: s0 = sqrt(5*G0/(8*Kb*horizon)) = 1.0576e-4
+
+-------------------
+*******Run 2*******
+-------------------

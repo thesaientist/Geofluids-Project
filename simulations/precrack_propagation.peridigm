@@ -1,0 +1,97 @@
+
+#     Description
+#       Simulation of a fracture propagating from precrack that is initiated
+#       20% of the way from negative y size of the coordinates.
+#
+#       Confining (far-field) stresses are...
+#
+#     Units are CGS
+#       mass          g
+#       length        cm
+#       time          s
+#       density       g/cm^3
+#       force         dyne
+#       pressure      dyne/cm^2
+#       velocity      cm/s
+#       acceleration  cm/s^2
+#       energy        erg
+
+{MESH_SIZE=15.0001}
+{FINAL_TIME=2.5e-2}
+
+Verbose "true"
+
+Discretization
+  Type "Text File"
+  Input Mesh File "precrack_propagation.txt"
+  Bond Filters
+    My First Bond Filter
+      Type "Rectangular_Plane"
+      Normal_X 1.0
+      Normal_Y 0.0
+      Normal_Z 0.0
+      Lower_Left_Corner_X 0.0
+      Lower_Left_Corner_Y -760.0
+      Lower_Left_Corner_Z -110.0
+      Bottom_Unit_Vector_X 0.0
+      Bottom_Unit_Vector_Y 1.0
+      Bottom_Unit_Vector_Z 0.0
+      Bottom_Length 310.0
+      Side_Length 220.0
+
+Materials
+  Rock
+    Material Model "Elastic"
+    Density 2.70
+    Bulk Modulus 3.7e11
+    Shear Modulus 1.0e11
+
+Damage Models
+  Critical Stretch Model
+    Damage Model "Critical Stretch"
+    Critical Stretch 1.0576e-4
+
+Blocks
+  Rock Block
+    Horizon {3*MESH_SIZE}
+    Block Names "block_1"
+    Material "Rock"
+    Damage Model "Critical Stretch Model"
+
+Boundary Conditions
+  Node Set All Nodes "nodeset_full.txt"
+  Node Set One "nodeset1.txt"
+  Node Set Two "nodeset2.txt"
+  Tension BC In Top X
+    Type "Prescribed Displacement"
+    Node Set "Node Set One"
+    Coordinate "x"
+    Value "(1/2-y/1500)*(50*t)"
+  Fix Rigid Body Motion In Z
+    Type "Prescribed Displacement"
+    Node Set "Node Set All Nodes"
+    Coordinate "z"
+    Value "0.0"
+
+Solver
+  Verbose "true"
+  Initial Time 0.0
+  Final Time {FINAL_TIME}
+  Verlet
+    Safety Factor 0.8
+
+Output
+  Output File Type "ExodusII"
+  Output Filename "crack_15cm_tensile_posX_BC"
+  Output Frequency 100
+  Parallel Write "true"
+  Output Variables
+    Displacement "true"
+    Velocity "true"
+    Element_Id "true"
+    Proc_Num "true"
+    Force_Density "true"
+    Force "true"
+    Dilatation "true"
+    Volume "true"
+    Damage "true"
